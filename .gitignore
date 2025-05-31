@@ -1,0 +1,41 @@
+# Maven target directories
+*/target/
+target/
+
+# Eclipse & VSCode
+.classpath
+.project
+.settings/
+.vscode/
+
+# IntelliJ
+.idea/
+*.iml
+
+# Logs
+*.log
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+*.jar
+*.war
+*.ear
+
+# AWS SAM/infra
+.aws-sam/
+infrastructure/.terraform/
+terraform.tfstate
+terraform.tfstate.backup
+.terraform.lock.hcl
+
+# Secrets or env
+.env
+*.pem
+*.key
+*.crt
+
+# Dependency-reduced POM from Maven Shade
+dependency-reduced-pom.xml
