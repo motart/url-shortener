@@ -7,7 +7,7 @@ import software.amazon.awssdk.services.dynamodb.model.*;
 
 import java.util.*;
 
-public class App implements RequestHandler<Map<String, Object>, Map<String, Object>> {
+public class ShortenLambda implements RequestHandler<Map<String, Object>, Map<String, Object>> {
 
     private static final String COUNTER_TABLE = "UrlCounter";
     private static final String URL_TABLE = "ShortUrls";
