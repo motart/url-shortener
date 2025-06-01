@@ -12,7 +12,7 @@ Resources:
   ShortenUrlLambda:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: com.abadlirachid.shortenlambda.Handler::handleRequest
+      Handler: com.abadlirachid.shortenlambda.ShortenLambda::handleRequest
       CodeUri: shorten-lambda/target/shorten-lambda-1.0-SNAPSHOT.jar
       Runtime: java17
       Events:

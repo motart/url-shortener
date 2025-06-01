@@ -21,5 +21,36 @@
         <artifactId>dynamodb</artifactId>
         <version>2.25.11</version>
       </dependency>
+      <dependency>
+        <groupId>redis.clients</groupId>
+        <artifactId>jedis</artifactId>
+        <version>5.1.0</version>
+      </dependency>
+        <!-- AWS SDK v2 Core -->
+      <dependency>
+        <groupId>software.amazon.awssdk</groupId>
+        <artifactId>dynamodb</artifactId>
+        <version>2.25.25</version> <!-- Or latest version -->
+      </dependency>
+
+      <!-- Lambda dependencies (optional but recommended) -->
+      <dependency>
+        <groupId>com.amazonaws</groupId>
+        <artifactId>aws-lambda-java-core</artifactId>
+        <version>1.2.3</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.amazonaws</groupId>
+        <artifactId>aws-lambda-java-events</artifactId>
+        <version>3.11.0</version>
+      </dependency>
+
+      <!-- Jackson (if you're serializing JSON) -->
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+        <version>2.17.0</version>
+      </dependency>
     </dependencies>
 </project>
