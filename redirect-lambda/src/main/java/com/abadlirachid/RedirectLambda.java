@@ -1,4 +1,4 @@
-package com.urlshortener;
+package com.abadlirachid;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;

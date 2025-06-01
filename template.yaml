@@ -1,0 +1,36 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: URL Shortener Java Lambda
+
+Globals:
+  Function:
+    Timeout: 10
+    Runtime: java17
+    MemorySize: 512
+
+Resources:
+  ShortenUrlLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: com.abadlirachid.shortenlambda.Handler::handleRequest
+      CodeUri: shorten-lambda/target/shorten-lambda-1.0-SNAPSHOT.jar
+      Runtime: java17
+      Events:
+        ShortenEvent:
+          Type: Api
+          Properties:
+            Path: /shortenurl
+            Method: post
+
+  RedirectUrlLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: com.abadlirachid.redirectlambda.Handler::handleRequest
+      CodeUri: redirect-lambda/target/redirect-lambda-1.0-SNAPSHOT.jar
+      Runtime: java17
+      Events:
+        RedirectEvent:
+          Type: Api
+          Properties:
+            Path: /{shorturl}
+            Method: get

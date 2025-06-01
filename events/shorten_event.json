@@ -1,0 +1,5 @@
+{
+  "httpMethod": "POST",
+  "body": "{\"longUrl\":\"https://example.com\"}",
+  "isBase64Encoded": false
+}
