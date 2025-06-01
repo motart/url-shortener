@@ -74,10 +74,32 @@ resource "aws_iam_policy" "lambda_dynamodb_policy" {
           aws_dynamodb_table.url_table.arn,
           aws_dynamodb_table.counter_table.arn
         ]
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "ec2:CreateNetworkInterface",
+          "ec2:DescribeNetworkInterfaces",
+          "ec2:DeleteNetworkInterface"
+        ],
+        Resource = "*"
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ],
+        Resource = "*"
       }
     ]
   })
-  depends_on = [ aws_dynamodb_table.counter_table, aws_dynamodb_table.url_table ]
+
+  depends_on = [
+    aws_dynamodb_table.counter_table,
+    aws_dynamodb_table.url_table
+  ]
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_dynamo_attach" {
@@ -125,10 +147,16 @@ resource "aws_lambda_function" "shorten_lambda" {
     variables = {
       URL_TABLE  = aws_dynamodb_table.url_table.name
       REDIS_HOST = aws_elasticache_cluster.cache.cache_nodes[0].address
+      REDIS_PORT = "6379"
     }
   }
 
-  depends_on = [null_resource.build_and_upload]
+  vpc_config {
+    subnet_ids         = [aws_subnet.main.id]
+    security_group_ids = [aws_security_group.lambda_sg.id]
+  }
+
+  # depends_on = [null_resource.build_and_upload, aws_dynamodb_table.url_table, aws_elasticache_cluster.cache]
 }
 
 # Lambda: RedirectUrlLambda
@@ -145,10 +173,31 @@ resource "aws_lambda_function" "redirect_lambda" {
     variables = {
       URL_TABLE  = aws_dynamodb_table.url_table.name
       REDIS_HOST = aws_elasticache_cluster.cache.cache_nodes[0].address
+      REDIS_PORT = "6379"
     }
   }
 
-  depends_on = [null_resource.build_and_upload]
+  vpc_config {
+    subnet_ids         = [aws_subnet.main.id]
+    security_group_ids = [aws_security_group.lambda_sg.id]
+  }
+
+  # depends_on = [null_resource.build_and_upload, aws_dynamodb_table.url_table, aws_elasticache_cluster.cache]
+}
+
+# Lambda security group
+resource "aws_security_group" "lambda_sg" {
+  name        = "lambda-access"
+  description = "Security group for Lambda functions"
+  vpc_id      = aws_vpc.main.id
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  depends_on = [aws_vpc.main]
 }
 
 # CloudWatch Log Groups for Lambda functions
@@ -204,6 +253,24 @@ resource "aws_apigatewayv2_route" "redirect_route" {
   depends_on = [ aws_apigatewayv2_integration.redirect_integration ]
 }
 
+resource "aws_apigatewayv2_stage" "dev" {
+  api_id      = aws_apigatewayv2_api.url_api.id
+  name        = "dev"
+  auto_deploy = true
+}
+
+resource "aws_apigatewayv2_stage" "prod" {
+  api_id      = aws_apigatewayv2_api.url_api.id
+  name        = "prod"
+  auto_deploy = false
+}
+
+resource "aws_apigatewayv2_stage" "default" {
+  api_id      = aws_apigatewayv2_api.url_api.id
+  name        = "$default"
+  auto_deploy = true
+}
+
 # DynamoDB Tables
 # URL Table
 resource "aws_dynamodb_table" "url_table" {
@@ -250,6 +317,28 @@ resource "aws_elasticache_subnet_group" "cache_subnet_group" {
   depends_on = [ aws_subnet.main ]
 }
 
+# Elasticache SG
+resource "aws_security_group" "redis_sg" {
+  name        = "redis-access"
+  description = "Allow access to Redis from Lambda"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    from_port       = 6379
+    to_port         = 6379
+    protocol        = "tcp"
+    security_groups = [aws_security_group.lambda_sg.id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  depends_on = [aws_security_group.lambda_sg]
+}
+
 # Elasticache Redis Cluster
 resource "aws_elasticache_cluster" "cache" {
   cluster_id           = "url-shortener-cache"
@@ -257,6 +346,8 @@ resource "aws_elasticache_cluster" "cache" {
   node_type            = "cache.t3.micro"
   num_cache_nodes      = 1
   parameter_group_name = "default.redis7"
+  port                 = 6379
+  security_group_ids   = [aws_security_group.redis_sg.id]
   subnet_group_name    = aws_elasticache_subnet_group.cache_subnet_group.name
   depends_on = [ aws_elasticache_subnet_group.cache_subnet_group ]
 }

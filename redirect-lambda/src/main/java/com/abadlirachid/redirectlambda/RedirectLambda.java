@@ -12,13 +12,27 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class RedirectLambda implements RequestHandler<Map<String, Object>, Map<String, Object>> {
-
     private final DynamoDbClient dynamoDbClient = DynamoDbClient.create();
-    private final Jedis redis = new Jedis(System.getenv("REDIS_HOST"), 6379);
-// REDIS_HOST
+
     @Override
     public Map<String, Object> handleRequest(Map<String, Object> input, Context context) {
         LambdaLogger logger = context.getLogger();
+
+        logger.log("REDIS_HOST ===> " + System.getenv("REDIS_HOST"));
+        logger.log("REDIS_PORT ===> " + System.getenv("REDIS_PORT"));
+        String redisHost = System.getenv("REDIS_HOST");
+        int redisPort = Integer.parseInt(System.getenv("REDIS_PORT"));
+
+        if (System.getenv("REDIS_HOST") == null || System.getenv("REDIS_PORT") == null) {
+            logger.log("🔴 Environment variables are missing");
+            logger.log("REDIS_HOST: " + System.getenv("REDIS_HOST"));
+            logger.log("REDIS_PORT: " + System.getenv("REDIS_PORT"));
+            throw new RuntimeException("Missing required env vars");
+        }
+
+
+        Jedis redis = new Jedis(redisHost, redisPort);
+
         Map<String, Object> response = new HashMap<>();
 
         try {
@@ -59,12 +73,8 @@ public class RedirectLambda implements RequestHandler<Map<String, Object>, Map<S
 
         } catch (Exception e) {
             logger.log("Error: " + e.getMessage());
-            response.put("StackTrace", e.getStackTrace());
-            response.put("REDIS_HOST", System.getenv("REDIS_HOST"));
-            response.put("URL_TABLE", System.getenv("URL_TABLE"));
-            response.put("Error", e.getMessage());
             response.put("statusCode", 404);
-            response.put("body", "{\"error\": \"URL not found\"}");
+            response.put("body", "{\"error\":" + e.getMessage() + "\"}");
         } finally {
             redis.close();
         }

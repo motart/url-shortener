@@ -9,7 +9,7 @@ Globals:
     MemorySize: 512
 
 Resources:
-  ShortenUrlLambda:
+  ShortenLambda:
     Type: AWS::Serverless::Function
     Properties:
       Handler: com.abadlirachid.shortenlambda.ShortenLambda::handleRequest
@@ -22,7 +22,7 @@ Resources:
             Path: /shortenurl
             Method: post
 
-  RedirectUrlLambda:
+  RedirectLambda:
     Type: AWS::Serverless::Function
     Properties:
       Handler: com.abadlirachid.redirectlambda.RedirectLambda::handleRequest
@@ -34,3 +34,7 @@ Resources:
           Properties:
             Path: /{shorturl}
             Method: get
+      Environment:
+        Variables:
+          REDIS_HOST: "host.docker.internal"
+          REDIS_PORT: "6379"
