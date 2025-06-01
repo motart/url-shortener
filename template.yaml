@@ -25,7 +25,7 @@ Resources:
   RedirectUrlLambda:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: com.abadlirachid.redirectlambda.Handler::handleRequest
+      Handler: com.abadlirachid.redirectlambda.RedirectLambda::handleRequest
       CodeUri: redirect-lambda/target/redirect-lambda-1.0-SNAPSHOT.jar
       Runtime: java17
       Events:

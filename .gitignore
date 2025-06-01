@@ -39,3 +39,13 @@ terraform.tfstate.backup
 
 # Dependency-reduced POM from Maven Shade
 dependency-reduced-pom.xml
+
+
+# React/Vite/Node.js
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
