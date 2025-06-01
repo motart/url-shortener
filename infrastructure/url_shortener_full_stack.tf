@@ -49,7 +49,8 @@ resource "aws_iam_role" "lambda_exec_role" {
   })
 }
 
-# Policy
+# Policies
+# IAM Policy Attachment to allow Lambda to write to CloudWatch Logs
 resource "aws_iam_role_policy_attachment" "lambda_logs" {
   role       = aws_iam_role.lambda_exec_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
@@ -119,6 +120,21 @@ resource "aws_lambda_function" "redirect_lambda" {
 
   depends_on = [null_resource.build_and_upload]
 }
+
+# CloudWatch Log Groups for Lambda functions
+resource "aws_cloudwatch_log_group" "shorten_lambda_log_group" {
+  name              = "/aws/lambda/${aws_lambda_function.shorten_lambda.function_name}"
+  retention_in_days = 1
+  depends_on = [ aws_lambda_function.shorten_lambda ]
+}
+
+resource "aws_cloudwatch_log_group" "redirect_lambda_log_group" {
+  name              = "/aws/lambda/${aws_lambda_function.redirect_lambda.function_name}"
+  retention_in_days = 1
+  depends_on = [ aws_lambda_function.redirect_lambda ]
+}
+
+
 
 # API Gateway
 resource "aws_apigatewayv2_api" "url_api" {
